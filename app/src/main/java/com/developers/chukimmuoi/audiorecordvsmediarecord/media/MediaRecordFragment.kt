@@ -3,8 +3,6 @@ package com.developers.chukimmuoi.audiorecordvsmediarecord.media
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.MediaPlayer
-import android.media.MediaRecorder
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
@@ -14,9 +12,8 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import com.developers.chukimmuoi.audiorecordvsmediarecord.handler.MediaHandler
 import timber.log.Timber
-import java.io.IOException
-
 
 
 /**
@@ -31,13 +28,11 @@ import java.io.IOException
 class MediaRecordFragment : Fragment() {
 
     private val REQUEST_RECORD_AUDIO_PERMISSION: Int = 200
-    private var sFileName: String ?= null
+
+    private lateinit var mMediaRecord: MediaHandler
 
     private var mRecordButton: RecordButton ?= null
-    private var mMediaRecord: MediaRecorder ?= null
-
     private var mPlayButton: PlayButton ?= null
-    private var mMediaPlayer: MediaPlayer ?= null
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted: Boolean = false
@@ -46,9 +41,6 @@ class MediaRecordFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        sFileName = activity.externalCacheDir.absolutePath
-        sFileName += "/audiorecordtest.3gp"
-
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
 
         val ll = LinearLayout(activity)
@@ -68,6 +60,9 @@ class MediaRecordFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mMediaRecord = MediaHandler(activity.externalCacheDir.absolutePath +
+                "/audiorecordtest.3gp")
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -84,64 +79,11 @@ class MediaRecordFragment : Fragment() {
         }
     }
 
-    private fun onRecord(start: Boolean) {
-        if (start)
-            startRecording()
-        else
-            stopRecording()
-    }
-
-    private fun onPlay(start: Boolean) {
-        if (start)
-            startPlaying()
-        else
-            stopPlaying()
-    }
-
-    private fun startPlaying() {
-        mMediaPlayer = MediaPlayer()
-        try {
-            mMediaPlayer?.setDataSource(sFileName)
-            mMediaPlayer?.prepare()
-            mMediaPlayer?.start()
-        } catch (e: IOException) {
-            Timber.e(e.message)
-        }
-    }
-
-    private fun startRecording() {
-        mMediaRecord = MediaRecorder()
-        mMediaRecord?.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mMediaRecord?.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-        mMediaRecord?.setOutputFile(sFileName)
-        mMediaRecord?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
-        try {
-            mMediaRecord?.prepare()
-        } catch (e: IOException) {
-            Timber.e("MediaRecord prepare failed.")
-        }
-
-        mMediaRecord?.start()
-    }
-
-    private fun stopPlaying() {
-        mMediaPlayer?.stop()
-        mMediaPlayer?.release()
-        mMediaPlayer = null
-    }
-
-    private fun stopRecording() {
-        mMediaRecord?.stop()
-        mMediaRecord?.release()
-        mMediaRecord = null
-    }
-
     inner class RecordButton(context: Context) : Button(context) {
         private var mStartRecording: Boolean = true
 
         private var clicker: OnClickListener = OnClickListener {
-            onRecord(mStartRecording)
+            mMediaRecord.onRecord(mStartRecording)
             text = if (mStartRecording) "Stop recoding" else "Start recoding"
             mStartRecording = !mStartRecording
         }
@@ -156,7 +98,7 @@ class MediaRecordFragment : Fragment() {
         private var mStartPlaying: Boolean = true
 
         private var clicker: OnClickListener = OnClickListener {
-            onPlay(mStartPlaying)
+            mMediaRecord.onPlay(mStartPlaying)
             text = if (mStartPlaying) "Stop playing" else "Start playing"
             mStartPlaying = !mStartPlaying
         }
@@ -168,9 +110,8 @@ class MediaRecordFragment : Fragment() {
     }
 
     override fun onStop() {
-        super.onStop()
+        mMediaRecord.cleanUp()
 
-        stopRecording()
-        stopPlaying()
+        super.onStop()
     }
 }
