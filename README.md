@@ -23,4 +23,4 @@ val mediaRecorder: MediaRecorder = MediaRecorder()
  ```
  
 ## Chú ý: 
-Ngoại lệ xẩy ra khi start AudioRecord & MediaRecord khi đang có 1 record khác chạy song song: java.lang.illegalstateexception at android.media.mediarecorder.start(native method). Xem link: https://github.com/commonsguy/cwac-cam2/issues/239 để tìm hiểu rõ hơn.
+Ngoại lệ xẩy ra khi start AudioRecord & MediaRecord đang có 1 record khác chạy song song chưa được **stop()**: java.lang.illegalstateexception at android.media.mediarecorder.start(native method). Xem link: https://github.com/commonsguy/cwac-cam2/issues/239 để tìm hiểu rõ hơn.
