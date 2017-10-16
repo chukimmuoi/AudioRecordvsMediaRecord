@@ -21,3 +21,6 @@ val mediaRecorder: MediaRecorder = MediaRecorder()
         mediaRecorder.reset()   // Sử dụng lại object mediaRecorder nếu call reset.
         mediaRecorder.release() // Không thể sử dụng lại object mediaRecorder nếu call release.
  ```
+ 
+## Chú ý: 
+Ngoại lệ xẩy ra khi start AudioRecord & MediaRecord khi đang có 1 record khác chạy song song: java.lang.illegalstateexception at android.media.mediarecorder.start(native method). Xem link: https://github.com/commonsguy/cwac-cam2/issues/239 để tìm hiểu rõ hơn.
